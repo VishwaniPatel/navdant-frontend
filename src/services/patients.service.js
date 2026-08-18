@@ -269,6 +269,16 @@ const PatientService = {
 
     return res.data;
   },
+
+  getNextCaseNumber: async () => {
+    try {
+      const response = await API.get('/api/patients/next-case-number');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching next case number:', error);
+      throw error;
+    }
+  },
 };
 
 export default PatientService;

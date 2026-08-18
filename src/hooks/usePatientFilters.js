@@ -16,17 +16,11 @@ const MONTHS = [
 ];
 
 export const usePatientFilters = () => {
-  const currentYear =
-    new Date().getFullYear();
-
-  const currentMonth =
-    new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
 
   const years = useMemo(() => {
     const result = [];
 
-    // Same basic range as mobile:
-    // oldest year -> current year
     for (let year = 2018; year <= currentYear; year++) {
       result.push(String(year));
     }
@@ -34,105 +28,134 @@ export const usePatientFilters = () => {
     return result.reverse();
   }, [currentYear]);
 
-  const [selectedYear, setSelectedYear] =
-    useState(null);
+  // Applied filters
+  const [selectedYear, setSelectedYear] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(null);
 
-  const [selectedMonth, setSelectedMonth] =
-    useState(null);
+  // Temporary filters inside modal
+  const [tempYear, setTempYear] = useState(null);
+  const [tempMonth, setTempMonth] = useState("ALL");
+
+  const [filterModalVisible, setFilterModalVisible] =
+    useState(false);
 
   const activeMonthLabel = useMemo(() => {
-    if (
-      !selectedMonth ||
-      selectedMonth === "ALL"
-    ) {
+    if (!selectedMonth || selectedMonth === "ALL") {
       return "All Months";
     }
 
     return (
       MONTHS.find(
-        (month) =>
-          month.value === selectedMonth
+        (month) => month.value === selectedMonth
       )?.label || selectedMonth
     );
   }, [selectedMonth]);
 
-  const applyFilters = (
-    year,
-    month
-  ) => {
-    let finalYear = year || null;
-    let finalMonth = month || "ALL";
+  const hasActiveFilters =
+    !!selectedYear || !!selectedMonth;
 
-    if (
-      finalMonth !== "ALL" &&
-      !finalYear
-    ) {
-      finalYear =
-        String(currentYear);
+  // =========================
+  // OPEN MODAL
+  // =========================
+
+  const openFilterModal = () => {
+    setTempYear(selectedYear);
+    setTempMonth(selectedMonth || "ALL");
+    setFilterModalVisible(true);
+  };
+
+  // =========================
+  // CLOSE MODAL
+  // =========================
+
+  const closeFilterModal = () => {
+    setFilterModalVisible(false);
+  };
+
+  // =========================
+  // APPLY
+  // =========================
+
+  const applyFilters = () => {
+    let finalYear = tempYear || null;
+    let finalMonth = tempMonth || "ALL";
+
+    // If month selected without year,
+    // automatically use current year.
+    if (finalMonth !== "ALL" && !finalYear) {
+      finalYear = String(currentYear);
     }
 
     setSelectedYear(finalYear);
+
     setSelectedMonth(
-      finalMonth === "ALL"
-        ? null
-        : finalMonth
+      finalMonth === "ALL" ? null : finalMonth
     );
 
-    return {
-      selectedYear: finalYear,
-      selectedMonth:
-        finalMonth === "ALL"
-          ? null
-          : finalMonth,
-    };
+    setFilterModalVisible(false);
   };
 
-  const clearFilters = (type) => {
-    if (!type) {
-      setSelectedYear(null);
-      setSelectedMonth(null);
+  // =========================
+  // RESET
+  // =========================
 
-      return {
-        selectedYear: null,
-        selectedMonth: null,
-      };
-    }
+  const resetFilters = () => {
+    setTempYear(null);
+    setTempMonth("ALL");
 
-    if (type === "year") {
-      setSelectedYear(null);
-      setSelectedMonth(null);
+    setSelectedYear(null);
+    setSelectedMonth(null);
 
-      return {
-        selectedYear: null,
-        selectedMonth: null,
-      };
-    }
+    setFilterModalVisible(false);
+  };
 
-    if (type === "month") {
-      setSelectedMonth(null);
+  // =========================
+  // CLEAR YEAR
+  // =========================
 
-      return {
-        selectedYear,
-        selectedMonth: null,
-      };
-    }
+  const clearYearFilter = () => {
+    setSelectedYear(null);
+    setSelectedMonth(null);
 
-    return {
-      selectedYear,
-      selectedMonth,
-    };
+    setTempYear(null);
+    setTempMonth("ALL");
+  };
+
+  // =========================
+  // CLEAR MONTH
+  // =========================
+
+  const clearMonthFilter = () => {
+    setSelectedMonth(null);
+
+    setTempMonth("ALL");
   };
 
   return {
     selectedYear,
     selectedMonth,
 
+    tempYear,
+    tempMonth,
+
+    setTempYear,
+    setTempMonth,
+
     years,
     months: MONTHS,
 
     activeMonthLabel,
+    hasActiveFilters,
+
+    filterModalVisible,
+
+    openFilterModal,
+    closeFilterModal,
 
     applyFilters,
-    clearFilters,
+    resetFilters,
+
+    clearYearFilter,
+    clearMonthFilter,
   };
 };

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import {
-  User,
   Lock,
   LogOut,
   ChevronRight,
@@ -8,57 +7,33 @@ import {
   EyeOff,
   X,
   Loader2,
-  Stethoscope,
+  User,
 } from "lucide-react";
 
 import authService from "../services/auth.service";
 import { useAuth } from "../context/AuthContext";
-
-const COLORS = {
-  primary: "#0B1E41",
-  secondary: "#376D0E",
-  tertiary: "#F4F7F9",
-  neutral: "#64748B",
-  background: "#F9FAFB",
-  white: "#FFFFFF",
-  danger: "#DC2626",
-};
+import DashboardLayout from "../components/layouts/DashboardLayout";
 
 const Settings = () => {
   const { user, logout } = useAuth();
-  console.log("user ",user);
-  
+
   const [modalVisible, setModalVisible] = useState(false);
 
-  const [currentPassword, setCurrentPassword] =
-    useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
-  const [newPassword, setNewPassword] =
-    useState("");
-
-  const [confirmPassword, setConfirmPassword] =
-    useState("");
-
-  const [showCurrentPassword, setShowCurrentPassword] =
-    useState(false);
-
-  const [showNewPassword, setShowNewPassword] =
-    useState(false);
-
-  const [showConfirmPassword, setShowConfirmPassword] =
-    useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [loading, setLoading] = useState(false);
-
   const [errors, setErrors] = useState({});
-
   const [message, setMessage] = useState(null);
 
-  const username =
-    user?.username || "Guest User";
+  const username = user?.username || "Guest User";
 
-  const initial =
-    username.charAt(0).toUpperCase() || "U";
+  const initial = username.charAt(0).toUpperCase() || "U";
 
   // ==========================================
   // CHANGE PASSWORD
@@ -68,13 +43,11 @@ const Settings = () => {
     const newErrors = {};
 
     if (!currentPassword) {
-      newErrors.currentPassword =
-        "Current password is required";
+      newErrors.currentPassword = "Current password is required";
     }
 
     if (!newPassword) {
-      newErrors.newPassword =
-        "New password is required";
+      newErrors.newPassword = "New password is required";
     } else if (newPassword.length < 6) {
       newErrors.newPassword =
         "New password must be at least 6 characters";
@@ -83,11 +56,8 @@ const Settings = () => {
     if (!confirmPassword) {
       newErrors.confirmPassword =
         "Please confirm your new password";
-    } else if (
-      newPassword !== confirmPassword
-    ) {
-      newErrors.confirmPassword =
-        "Passwords do not match";
+    } else if (newPassword !== confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
     }
 
     setErrors(newErrors);
@@ -100,15 +70,12 @@ const Settings = () => {
     setMessage(null);
 
     try {
-      const response =
-        await authService.changePassword({
-          old_password: currentPassword,
-          new_password: newPassword,
-        });
+      const response = await authService.changePassword({
+        old_password: currentPassword,
+        new_password: newPassword,
+      });
 
-      if (
-        response?.data?.status === "success"
-      ) {
+      if (response?.data?.status === "success") {
         setMessage({
           type: "success",
           text: "Password changed successfully",
@@ -131,10 +98,7 @@ const Settings = () => {
         });
       }
     } catch (error) {
-      console.error(
-        "Change password error:",
-        error
-      );
+      console.error("Change password error:", error);
 
       setMessage({
         type: "error",
@@ -161,17 +125,29 @@ const Settings = () => {
     try {
       await logout();
     } catch (error) {
-      console.error(
-        "Logout error:",
-        error
-      );
-
+      console.error("Logout error:", error);
       await logout();
     }
   };
 
   // ==========================================
-  // INPUT
+  // CLOSE PASSWORD MODAL
+  // ==========================================
+
+  const closePasswordModal = () => {
+    if (loading) return;
+
+    setModalVisible(false);
+    setErrors({});
+    setMessage(null);
+
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  };
+
+  // ==========================================
+  // PASSWORD INPUT
   // ==========================================
 
   const PasswordInput = ({
@@ -185,18 +161,13 @@ const Settings = () => {
   }) => {
     return (
       <div>
-        <label className="mb-2 block text-sm font-medium text-[#0B1E41]">
+        <label className="mb-2 block text-sm font-semibold text-[#0B1E41]">
           {label}
         </label>
 
         <div className="relative">
-
           <input
-            type={
-              showPassword
-                ? "text"
-                : "password"
-            }
+            type={showPassword ? "text" : "password"}
             value={value}
             onChange={(e) => {
               onChange(e.target.value);
@@ -209,13 +180,11 @@ const Settings = () => {
               }
             }}
             placeholder={placeholder}
-            className={`w-full rounded-xl border bg-white px-4 py-3 pr-12 text-sm text-[#0B1E41] outline-none transition
-              ${
-                error
-                  ? "border-red-500 focus:ring-2 focus:ring-red-100"
-                  : "border-slate-200 focus:border-[#0B1E41] focus:ring-2 focus:ring-blue-50"
-              }
-            `}
+            className={`w-full rounded-xl border bg-white px-4 py-3 pr-12 text-sm text-[#0B1E41] outline-none transition ${
+              error
+                ? "border-red-400 focus:ring-2 focus:ring-red-100"
+                : "border-slate-200 focus:border-[#0B1E41] focus:ring-2 focus:ring-[#0B1E41]/10"
+            }`}
           />
 
           <button
@@ -223,7 +192,7 @@ const Settings = () => {
             onClick={() =>
               setShowPassword(!showPassword)
             }
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B]"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-[#0B1E41]"
           >
             {showPassword ? (
               <EyeOff size={19} />
@@ -231,12 +200,11 @@ const Settings = () => {
               <Eye size={19} />
             )}
           </button>
-
         </div>
 
         {error && (
-          <p className="mt-1 text-xs text-red-600">
-            {error}
+          <p className="mt-1.5 text-xs text-red-600">
+            {error.text}
           </p>
         )}
       </div>
@@ -244,212 +212,230 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB]">
+    <DashboardLayout>
+      <div className="w-full">
 
-      {/* Page Header */}
+        {/* =========================================
+            PAGE HEADER
+        ========================================= */}
 
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#0B1E41]">
-          Settings
-        </h1>
+        <div className="mb-7">
+          <h1 className="text-2xl font-bold text-slate-800">
+            Manage Account Settings
+          </h1>
 
-        <p className="mt-1 text-sm text-[#64748B]">
-          Manage your clinic account and
-          application settings
-        </p>
-      </div>
+          <p className="mt-1 text-sm text-slate-500">
+            Manage your clinic account and application settings
+          </p>
+        </div>
 
-      <div className="mx-auto max-w-4xl space-y-6">
+        {/* =========================================
+            MAIN CONTENT
+        ========================================= */}
 
-        {/* =====================================
-            PROFILE
-        ===================================== */}
+        <div className="w-full max-w-5xl space-y-7">
 
-        <section className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+          {/* =====================================
+              PROFILE
+          ===================================== */}
 
-          <div className="flex flex-col items-center px-6 py-8 sm:py-10">
+          <section>
+            <div className="mb-3">
+              <h2 className="text-base font-bold text-slate-800">
+                Profile
+              </h2>
 
-            <div className="relative">
-
-              <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#0B1E41] text-3xl font-bold text-white shadow-md">
-                {initial}
-              </div>
-
-              {/* Online */}
-
-              <span className="absolute bottom-1 right-1 h-5 w-5 rounded-full border-4 border-white bg-green-500" />
-
+              <p className="mt-1 text-xs text-slate-400">
+                Your account information
+              </p>
             </div>
 
-            <h2 className="mt-4 text-xl font-bold text-[#0B1E41]">
-              {username}
-            </h2>
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-            <span className="mt-2 rounded-full bg-[#0B1E41]/10 px-4 py-1.5 text-xs font-medium text-[#0B1E41]">
-              Clinic Administrator
-            </span>
+              <div className="flex flex-col gap-5 p-6 sm:flex-row sm:items-center">
 
-          </div>
+                {/* Avatar */}
 
-        </section>
+                <div className="relative shrink-0">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-[#0B1E41] text-2xl font-bold text-white shadow-sm">
+                    {initial}
+                  </div>
 
-        {/* =====================================
-            DOCTOR MANAGEMENT
-        ===================================== */}
-
-        <section>
-
-          <h2 className="mb-3 px-1 text-sm font-semibold uppercase tracking-wide text-[#64748B]">
-            Doctor Management
-          </h2>
-
-          <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
-
-            <button
-              className="flex w-full items-center justify-between px-5 py-5 text-left transition hover:bg-[#F4F7F9]"
-            >
-
-              <div className="flex items-center gap-4">
-
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0B1E41]/10">
-                  <Stethoscope
-                    size={21}
-                    className="text-[#0B1E41]"
-                  />
+                  {/* <span className="absolute bottom-0 right-0 h-5 w-5 rounded-full border-4 border-white bg-green-500" /> */}
                 </div>
 
-                <div>
-                  <p className="font-semibold text-[#0B1E41]">
-                    Doctor Management
+                {/* User Info */}
+
+                <div className="min-w-0">
+                  <h3 className="text-xl font-bold text-[#0B1E41]">
+                    {username}
+                  </h3>
+
+                  <p className="mt-1 text-sm text-slate-500">
+                    Clinic Administrator
                   </p>
 
-                  <p className="mt-1 text-xs text-[#64748B]">
-                    Manage doctors and signatures
-                  </p>
+                  <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-[#0B1E41]/5 px-3 py-1.5">
+                    <User
+                      size={14}
+                      className="text-[#0B1E41]"
+                    />
+
+                    <span className="text-xs font-medium text-[#0B1E41]">
+                      Active Account
+                    </span>
+                  </div>
                 </div>
 
               </div>
+            </div>
+          </section>
 
-              <ChevronRight
-                size={20}
-                className="text-[#64748B]"
-              />
+          {/* =====================================
+              ACCOUNT SETTINGS
+          ===================================== */}
 
-            </button>
+          <section>
+            <div className="mb-3">
+              <h2 className="text-base font-bold text-slate-800">
+                Account Settings
+              </h2>
 
-          </div>
+              <p className="mt-1 text-xs text-slate-400">
+                Manage your account security and session
+              </p>
+            </div>
 
-        </section>
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-        {/* =====================================
-            ACCOUNT SETTINGS
-        ===================================== */}
+              {/* CHANGE PASSWORD */}
 
-        <section>
+              <button
+                type="button"
+                onClick={() => {
+                  setModalVisible(true);
+                  setMessage(null);
+                  setErrors({});
+                }}
+                className="flex w-full items-center justify-between px-6 py-5 text-left transition hover:bg-slate-50"
+              >
+                <div className="flex items-center gap-4">
 
-          <h2 className="mb-3 px-1 text-sm font-semibold uppercase tracking-wide text-[#64748B]">
-            Account Settings
-          </h2>
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#0B1E41]/10">
+                    <Lock
+                      size={20}
+                      className="text-[#0B1E41]"
+                    />
+                  </div>
 
-          <div className="overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm">
+                  <div>
+                    <p className="text-sm font-semibold text-[#0B1E41]">
+                      Change Password
+                    </p>
 
-            {/* Change Password */}
+                    <p className="mt-1 text-xs text-slate-500">
+                      Update your account password
+                    </p>
+                  </div>
 
-            <button
-              onClick={() => {
-                setModalVisible(true);
-                setMessage(null);
-              }}
-              className="flex w-full items-center justify-between px-5 py-5 text-left transition hover:bg-[#F4F7F9]"
-            >
-
-              <div className="flex items-center gap-4">
-
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#0B1E41]/10">
-                  <Lock
-                    size={20}
-                    className="text-[#0B1E41]"
-                  />
                 </div>
+
+                <ChevronRight
+                  size={20}
+                  className="shrink-0 text-slate-400"
+                />
+              </button>
+
+              <div className="h-px bg-slate-100" />
+
+              {/* LOGOUT */}
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex w-full items-center justify-between px-6 py-5 text-left transition hover:bg-red-50"
+              >
+                <div className="flex items-center gap-4">
+
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50">
+                    <LogOut
+                      size={20}
+                      className="text-red-600"
+                    />
+                  </div>
+
+                  <div>
+                    <p className="text-sm font-semibold text-red-600">
+                      Logout
+                    </p>
+
+                    <p className="mt-1 text-xs text-slate-500">
+                      Sign out of your account
+                    </p>
+                  </div>
+
+                </div>
+
+                <ChevronRight
+                  size={20}
+                  className="shrink-0 text-slate-400"
+                />
+              </button>
+
+            </div>
+          </section>
+
+          {/* =====================================
+              APPLICATION INFORMATION
+          ===================================== */}
+
+          {/* <section>
+            <div className="mb-3">
+              <h2 className="text-base font-bold text-slate-800">
+                Application
+              </h2>
+
+              <p className="mt-1 text-xs text-slate-400">
+                Application information
+              </p>
+            </div>
+
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+              <div className="flex items-center justify-between px-6 py-5">
 
                 <div>
-                  <p className="font-semibold text-[#0B1E41]">
-                    Change Password
+                  <p className="text-sm font-semibold text-[#0B1E41]">
+                    Navdant Web
                   </p>
 
-                  <p className="mt-1 text-xs text-[#64748B]">
-                    Update your account password
+                  <p className="mt-1 text-xs text-slate-500">
+                    Clinic Management System
                   </p>
                 </div>
+
+                <span className="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-medium text-slate-500">
+                  Version 1.0.0
+                </span>
 
               </div>
 
-              <ChevronRight
-                size={20}
-                className="text-[#64748B]"
-              />
+            </div>
+          </section> */}
 
-            </button>
-
-            <div className="h-px bg-slate-100" />
-
-            {/* Logout */}
-
-            <button
-              onClick={handleLogout}
-              className="flex w-full items-center justify-between px-5 py-5 text-left transition hover:bg-red-50"
-            >
-
-              <div className="flex items-center gap-4">
-
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-50">
-                  <LogOut
-                    size={20}
-                    className="text-red-600"
-                  />
-                </div>
-
-                <div>
-                  <p className="font-semibold text-red-600">
-                    Logout
-                  </p>
-
-                  <p className="mt-1 text-xs text-[#64748B]">
-                    Sign out of your account
-                  </p>
-                </div>
-
-              </div>
-
-              <ChevronRight
-                size={20}
-                className="text-[#64748B]"
-              />
-
-            </button>
-
-          </div>
-
-        </section>
-
-        {/* Version */}
-
-        <p className="pb-6 text-center text-xs text-[#64748B]">
-          Navdant Web • Version 1.0.0
-        </p>
-
+        </div>
       </div>
 
-      {/* =======================================
+      {/* =========================================
           CHANGE PASSWORD MODAL
-      ======================================= */}
+      ========================================= */}
 
       {modalVisible && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4 py-6">
 
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white shadow-2xl">
 
-            {/* Header */}
+            {/* HEADER */}
 
             <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
 
@@ -458,23 +444,23 @@ const Settings = () => {
                   Change Password
                 </h2>
 
-                <p className="mt-1 text-xs text-[#64748B]">
+                <p className="mt-1 text-xs text-slate-500">
                   Update your account password
                 </p>
               </div>
 
               <button
-                onClick={() =>
-                  setModalVisible(false)
-                }
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-[#64748B] hover:bg-[#F4F7F9]"
+                type="button"
+                onClick={closePasswordModal}
+                disabled={loading}
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:opacity-50"
               >
                 <X size={20} />
               </button>
 
             </div>
 
-            {/* Body */}
+            {/* BODY */}
 
             <div className="space-y-5 px-6 py-6">
 
@@ -495,9 +481,7 @@ const Settings = () => {
                 value={currentPassword}
                 onChange={setCurrentPassword}
                 showPassword={showCurrentPassword}
-                setShowPassword={
-                  setShowCurrentPassword
-                }
+                setShowPassword={setShowCurrentPassword}
                 error={
                   errors.currentPassword
                     ? {
@@ -514,9 +498,7 @@ const Settings = () => {
                 value={newPassword}
                 onChange={setNewPassword}
                 showPassword={showNewPassword}
-                setShowPassword={
-                  setShowNewPassword
-                }
+                setShowPassword={setShowNewPassword}
                 error={
                   errors.newPassword
                     ? {
@@ -533,9 +515,7 @@ const Settings = () => {
                 value={confirmPassword}
                 onChange={setConfirmPassword}
                 showPassword={showConfirmPassword}
-                setShowPassword={
-                  setShowConfirmPassword
-                }
+                setShowPassword={setShowConfirmPassword}
                 error={
                   errors.confirmPassword
                     ? {
@@ -549,21 +529,21 @@ const Settings = () => {
 
             </div>
 
-            {/* Footer */}
+            {/* FOOTER */}
 
-            <div className="flex gap-3 border-t border-slate-100 px-6 py-5">
+            <div className="flex gap-3 border-t border-slate-100 bg-slate-50 px-6 py-5">
 
               <button
-                onClick={() =>
-                  setModalVisible(false)
-                }
+                type="button"
+                onClick={closePasswordModal}
                 disabled={loading}
-                className="flex-1 rounded-xl bg-slate-100 px-4 py-3 text-sm font-semibold text-[#64748B] transition hover:bg-slate-200"
+                className="flex-1 rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 disabled:opacity-50"
               >
                 Cancel
               </button>
 
               <button
+                type="button"
                 onClick={handleChangePassword}
                 disabled={loading}
                 className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-[#0B1E41] px-4 py-3 text-sm font-semibold text-white transition hover:bg-[#162D59] disabled:cursor-not-allowed disabled:opacity-60"
@@ -583,11 +563,9 @@ const Settings = () => {
             </div>
 
           </div>
-
         </div>
       )}
-
-    </div>
+    </DashboardLayout>
   );
 };
 

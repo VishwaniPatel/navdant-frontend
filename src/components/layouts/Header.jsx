@@ -13,9 +13,11 @@ import { useAuth } from "../../context/AuthContext";
 const pageTitles = {
   "/": "Dashboard",
   "/patients": "Patient Directory",
+  "/doctors": "Doctor Management",
   "/patients/register": "Add Patient",
   "/settings": "Settings",
   "/profile": "My Profile",
+  "/expenses": "Expense Tracker"
 };
 
 const Header = ({ onMenuClick }) => {
