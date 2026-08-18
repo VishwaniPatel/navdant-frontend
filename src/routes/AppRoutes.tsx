@@ -10,6 +10,7 @@ import CategoryExpenses from "../components/CategoryExpenses";
 import DoctorManagement from "../pages/DoctorManagement";
 import Reports from "../pages/Reports";
 import PatientRegistration from "../pages/PatientRegistration";
+import Profile from "../pages/ProfileSection";
 
 
 function AppRoutes() {
@@ -40,9 +41,9 @@ function AppRoutes() {
                 />
 
                 <Route
-  path="/patients/register"
-  element={<PatientRegistration />}
-/>
+                    path="/patients/register"
+                    element={<PatientRegistration />}
+                />
 
                 <Route path="/expenses" element={<Expenses />} />
 
@@ -52,6 +53,7 @@ function AppRoutes() {
                     element={<CategoryExpenses />}
                 />
                 <Route path="/reports" element={<Reports />} />
+                <Route path="/profile" element={<Profile />} />
             </Routes>
         </BrowserRouter>
     );
